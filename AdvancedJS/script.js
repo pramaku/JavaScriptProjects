@@ -160,3 +160,47 @@ unknownJobQuestion('Mark');
     var score = Math.random() * 10;
     console.log(score >= (5 - goodLuck));
 })(4);
+
+/*******************************
+// closures
+********************************/
+
+function retirement(retirementAge, ) {
+    var msg = ' years until retirement';
+    return function(yearOfBirth) {
+        var age = 2018 - yearOfBirth;
+        console.log((retirementAge - age) + msg);
+    }
+}
+
+var usRetirement = retirement(66);
+var ukRetirement = retirement(65);
+var indiaRetirement = retirement(55);
+
+usRetirement(1985);
+ukRetirement(1985);
+indiaRetirement(1985);
+
+function interviewQuestion(job) {
+    var question;
+    if (job === 'designer') {
+        question = ' what you know about UX design ?';
+    } else if (job === 'teacher') {
+        question = ' what subjects can you teach ?';
+    } else {
+        question = ' what job do you want to apply for?';
+    }
+
+    return function(name) {
+        console.log(name + question);
+    }
+}
+
+var teacherQuestion = interviewQuestion('teacher');
+teacherQuestion('Jane');
+
+var designerQuestion = interviewQuestion('designer');
+designerQuestion('John');
+
+var unknownJobQuestion = interviewQuestion('developer');
+unknownJobQuestion('Mark');
