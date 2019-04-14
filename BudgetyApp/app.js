@@ -3,7 +3,20 @@ var budgetController = (function() {
         this.id = id;
         this.description = description;
         this.value = value;
+        this.percentage = -1;
     };
+
+    Expense.prototype.calcPercentage = function(totalIncome) {
+        if (totalIncome > 0) {
+            data.allItems.exp.forEach(function(current) {
+                current.percentage =  Math.round((current.value / totalIncome ) * 100);
+            });
+        }
+    };
+
+    Expense.prototype.getPercentage = function() {
+        return this.percentage;
+    }
 
     var Income = function(id, description, value) {
         this.id = id;
@@ -85,6 +98,12 @@ var budgetController = (function() {
             }
         },
 
+        calcPercentages: function() {
+            data.allItems.exp.forEach(function(current) {
+                current.calcPercentage(data.totals.inc);
+            });
+        },
+
         getBudget: function() {
             return {
                 budget: data.budget,
@@ -92,6 +111,12 @@ var budgetController = (function() {
                 expenses: data.totals.exp,
                 percentage: data.percentage
             };
+        },
+
+        getPercentages: function() {
+            return data.allItems.exp.map(function(current) {
+                return current.getPercentage(); 
+            });
         },
 
         showData: function() {
@@ -112,7 +137,34 @@ var UIController = (function() {
         incomeBudgetValue: '.budget__income--value',
         expenseBudgetValue: '.budget__expenses--value',
         percentageValue: '.budget__expenses--percentage',
-        container: '.container'
+        container: '.container',
+        expensesPercentage: '.item__percentage',
+        budgetTitleMonth: '.budget__title--month'
+    };
+
+    var formatNumber= function(num, type) {
+        // +/- before number if inc/exp
+        // exactly 2 decimal
+        // use , for thousands
+        var numSplit, int, decimal, sign;
+        num = Math.abs(num);
+        num = num.toFixed(2);
+
+        numSplit = num.split('.');
+        int = numSplit[0];
+        if (int.length > 3) {
+            int = int.substr(0, int.length - 3) + ',' +
+                    int.substr(int.length - 3, 3);
+        }
+
+        decimal = numSplit[1];
+        return (type === 'exp'? '-' : '+') + ' ' + int + '.' + decimal;
+    };
+
+    var nodeListForEach = function(list, callback) {
+        for (var i=0; i< list.length; i++) {
+            callback(list[i], i);
+        }
     };
 
     return {
@@ -129,18 +181,18 @@ var UIController = (function() {
             var html, domElement;
             
             if (type == 'inc') {
-                html = '<div class="item clearfix" id="inc-%id%"><div               class="item__description">%description%</div><div class="right clearfix"><div class="item__value">+ %value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="inc-%id%"><div               class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
 
                 domElement = document.querySelector(domStrings.incomeContainer);
             } else {
-                html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">- %value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+                html = '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
     
                 domElement = document.querySelector(domStrings.expenseContainer);
             }
             
             html = html.replace('%id%', item.id);
             html = html.replace('%description%', item.description);
-            html = html.replace('%value%', item.value);
+            html = html.replace('%value%', formatNumber(item.value, type));
             
             domElement.insertAdjacentHTML('beforeend', html);
         },
@@ -160,24 +212,24 @@ var UIController = (function() {
         },
 
         displayBudget: function(budget) {
-            var element;
-            
+            var element, sign;
+
+            budget.budget > 0? sign = 'inc': sign = 'exp';
             element = document.querySelector(domStrings.budgetValue);
-            element.textContent = budget.budget;
+            element.textContent = formatNumber(budget.budget, sign);
 
             element = document.querySelector(domStrings.incomeBudgetValue);
-            element.textContent = budget.totalIncome;
+            element.textContent = formatNumber(budget.totalIncome, 'inc');
 
             element = document.querySelector(domStrings.expenseBudgetValue);
-            element.textContent = budget.expenses;
+            element.textContent = formatNumber(budget.expenses, 'exp');
 
             element = document.querySelector(domStrings.percentageValue);
             if (budget.percentage > 0) {
                 element.textContent = budget.percentage + '%';
             } else {
                 element.textContent = '--';
-            }
-            
+            }            
         },
 
         getDomStrings: function() {
@@ -188,6 +240,45 @@ var UIController = (function() {
             var element;
             element = document.getElementById(itemId);
             element.parentNode.removeChild(element);
+        },
+
+        displayPercentages: function(percentages) {
+            var fields;
+            fields = document.querySelectorAll(domStrings.expensesPercentage);
+            
+            nodeListForEach(fields, function(current, index) {
+                if (percentages[index] >= 0) {
+                    current.textContent =  percentages[index] + '%';
+                } else {
+                    current.textContent = '--';
+                }
+            });
+        },
+        
+        displayMonth: function() {
+            var now, month, year;
+
+            var now = new Date();
+            
+            months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            month = months[now.getMonth()];
+            year = now.getFullYear();
+            document.querySelector(domStrings.budgetTitleMonth).textContent = 
+                        month  + ' ' + year;
+        },
+
+        changedType: function() {
+            var fields;
+            fields = document.querySelectorAll(
+                domStrings.inputType + ',' +
+                domStrings.inputDesc + ',' +
+                domStrings.inputValue);
+            
+            nodeListForEach(fields, function(current) {
+                current.classList.toggle('red-focus');
+            });
+            
+            document.querySelector(domStrings.inputBtn).classList.toggle('red');
         }
     }
 })();
@@ -206,6 +297,9 @@ var controller = (function(budgetCtrl, uiCtrl) {
 
         document.querySelector(DOM.container)
             .addEventListener('click', ctrlDeleteItem);
+
+        document.querySelector(DOM.inputType)
+            .addEventListener('change', uiCtrl.changedType);
     };
 
     var updateBudget = function() {
@@ -219,6 +313,17 @@ var controller = (function(budgetCtrl, uiCtrl) {
 
         // display the budget in UI.
         uiCtrl.displayBudget(budget);
+    };
+
+    var updatePercentages = function() {
+        // caluculate the percentage.
+        budgetCtrl.calcPercentages();
+
+        // return the percentages.
+        var percentages = budgetCtrl.getPercentages();
+
+        // display the percentages in UI.
+        uiCtrl.displayPercentages(percentages);
     };
 
     var ctrlAddItem = function() {
@@ -240,6 +345,9 @@ var controller = (function(budgetCtrl, uiCtrl) {
 
             // caluculate and update budget
             updateBudget();
+
+            // caluculate and update percentages.
+            updatePercentages();
         }
     };
 
@@ -260,6 +368,9 @@ var controller = (function(budgetCtrl, uiCtrl) {
 
             // update and show the budget.
             updateBudget();
+
+            // caluculate and update percentages.
+            updatePercentages();
         }
     };
 
@@ -272,6 +383,7 @@ var controller = (function(budgetCtrl, uiCtrl) {
                 expenses: 0,
                 percentage: -1
             });
+            uiCtrl.displayMonth();
             setUpEventListeners();
         }
     };
