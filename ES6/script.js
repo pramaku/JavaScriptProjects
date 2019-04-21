@@ -1,5 +1,5 @@
 /***********************
-// Let and const 
+// Let and const
 ***********************/
 /*
 var name5 = 'John';
@@ -26,12 +26,12 @@ var drivingLicense5 = function(passed) {
     if (passed) {
         var firstName = 'John';
         var yearOfBirth = 1989;
-        console.log(firstName + ' who was born in ' + 
+        console.log(firstName + ' who was born in ' +
                     yearOfBirth + ' passed the test');
     }
-    
+
     // var has function scope, so below is OK.
-    console.log(firstName + ' who was born in ' + 
+    console.log(firstName + ' who was born in ' +
             yearOfBirth + ' passed the test');
 };
 
@@ -43,19 +43,19 @@ var drivingLicense6 = function(passed) {
     if (passed) {
         let firstName = 'John';
         const yearOfBirth = 1989;
-        console.log(firstName + ' who was born in ' + 
+        console.log(firstName + ' who was born in ' +
                     yearOfBirth + ' passed the test');
-        
+
         let print = function() {
             // Ok. because of block scope the variables are accesible.
-            console.log(firstName + ' who was born in ' + 
+            console.log(firstName + ' who was born in ' +
                     yearOfBirth + ' passed the test');
         }
         return print;
     }
-    
+
     // let has block scope, so below is not OK.
-    // console.log(firstName + ' who was born in ' + 
+    // console.log(firstName + ' who was born in ' +
     //        yearOfBirth + ' passed the test');
 };
 
@@ -126,7 +126,7 @@ const years = [1990, 1982, 1976, 1985, 2000];
 
 // ES5
 var ages5 = years.map(function(current) {
-   return 2018 - current; 
+   return 2018 - current;
 });
 
 console.log(ages5);
@@ -189,7 +189,7 @@ function Person(firstName) {
 /*
 Person.prototype.friends5 = function(friends) {
     var arr = friends.map(function(current) {
-       return current + ' is friend of ' + this.firstName; 
+       return current + ' is friend of ' + this.firstName;
     }.bind(this));
 
     console.log(arr);
@@ -271,8 +271,10 @@ boxesArr5.forEach(function(current) {
 */
 
 // ES6
+/*
 const boxArr6 = Array.from(boxes);
 boxArr6.forEach(cur => cur.style.backgroundColor = 'dodgerblue');
+*/
 
 // ES5
 /*
@@ -335,38 +337,186 @@ console.log(sum3);
 // REST Parameters
 **********************************/
 //ES5
-function isFullAges5() {
+/*
+function isFullAges5(limit) {
     console.log(arguments);
-    argArr = Array.prototype.slice.call(arguments);
+    argArr = Array.prototype.slice.call(arguments, 1);
     console.log(argArr);
     argArr.forEach(function(current) {
-        console.log((new Date().getFullYear() - current) >= 18);
+        console.log((new Date().getFullYear() - current) >= limit);
     });
 }
 
-isFullAges5(1998, 1989, 1965, 2013, 2002);
+isFullAges5(21, 1998, 1989, 1965, 2013, 2002);
 
 // ES6
-function isFullAges6(...years) {
+function isFullAges6(limit, ...years) {
     console.log(years);
-    years.forEach(cur => console.log((new Date().getFullYear() - current) >= 18));
+    years.forEach(cur => console.log((new Date().getFullYear() - cur) >= limit));
 }
 
-isFullAges6(1998, 1989, 1965, 2013, 2002);
+isFullAges6(16, 1998, 1989, 1965, 2013, 2002);
+*/
+/*****************************************
+// Default Parameters
+*****************************************/
+/*
+// ES5 (default params not supported, compare with undefined)
+var SmithPerson5 = function (firstName, yearOfBirth, lastName, nationality) {
+    this.firstName = firstName;
+    if (lastName === undefined) {
+        this.lastName = 'Smith';
+    }
+
+    this.yearOfBirth = yearOfBirth;
+    if (nationality === undefined) {
+        this.nationality = 'american';
+    }
+}
+
+var john = new SmithPerson5('John', 1980);
+
+// ES6
+const SmithPerson6 = function (firstName, yearOfBirth, lastName='Smith', nationality='american') {
+    this.firstName = firstName;
+    this.lastName = lastName;
+    this.yearOfBirth = yearOfBirth;
+    this.nationality = nationality;
+}
+
+var john = new SmithPerson6('John', 1980, 'Schmidt');
+var emily = new SmithPerson6('Emily', 1996);
+console.log(emily);
+*/
+
+/******************************************
+// ES6 Maps
+******************************************/
+/*
+const question = new Map();
+question.set('question', 'What is the name of latest majot JS version?');
+question.set(1, 'ES5');
+question.set(2, 'ES6');
+question.set(3, 'ES2015');
+question.set(4, 'ES7');
+question.set('correct', 3);
+question.set(true, 'Correct answer');
+question.set(false, 'Wrong answer, please try again');
 
 
+console.log(question.get('question'));
+
+for (const [k, v] of question.entries()) {
+    if (typeof(k) === 'number') {
+        console.log(k + ') ' + v);
+    }
+}
+
+const answer = prompt('Write your answer : ');
+console.log(question.get(question.get('correct') === parseInt(answer)));
+*/
+
+/*******************************************
+// ES6 Classes
+*******************************************/
+/*
+// ES5
+var Person5 = function(name, yearOfBirth, job) {
+    this.name = name;
+    this.yearOfBirth = yearOfBirth;
+    this.job = job;
+};
+
+Person5.prototype.caluculateAge = function() {
+    var age = new Date().getFullYear() - this.yearOfBirth;
+    console.log(age);
+};
+
+var john5 = new Person5('John', 1985, 'Teacher');
+
+//ES6
+class Person6 {
+    constructor (name, yearOfBirth, job) {
+        this.name = name;
+        this.yearOfBirth = yearOfBirth;
+        this.job = job;
+    }
+
+    caluculateAge () {
+        var age = new Date().getFullYear() - this.yearOfBirth;
+        console.log(age);
+    }
+
+    static greeting() {
+        console.log('Stativ method');
+    }
+}
+
+const john6 = new Person6('John', 1985, 'Teacher');
+
+Person6.greeting();
+*/
+
+/************************************************
+// Inheritance with Sub classes
+************************************************/
+/*
+// ES5
+var Person5 = function(name, yearOfBirth, job) {
+    this.name = name;
+    this.yearOfBirth = yearOfBirth;
+    this.job = job;
+};
+
+Person5.prototype.caluculateAge = function() {
+    var age = new Date().getFullYear() - this.yearOfBirth;
+    console.log(age);
+};
 
 
+var Athlete5 = function(name, yearOfBirth, job, olympics, medals) {
+    Person5.call(this, name, yearOfBirth, job);
+    this.olympics = olympics;
+    this.medals = medals;
+};
+
+// attach the prototype.
+Athlete5.prototype = Object.create(Person5.prototype);
+
+Athlete5.prototype.wonMedal = function() {
+    this.medals++;
+    console.log(this.medals);
+}
+
+var johnAthelete5 = new Athlete5('John', 1990, 'Swimmer', 3, 10);
 
 
+//ES6
+class Person6 {
+    constructor (name, yearOfBirth, job) {
+        this.name = name;
+        this.yearOfBirth = yearOfBirth;
+        this.job = job;
+    }
 
+    caluculateAge () {
+        var age = new Date().getFullYear() - this.yearOfBirth;
+        console.log(age);
+    }
+}
 
+class Athlete6 extends Person6 {
+    constructor (name, yearOfBirth, job, olympics, medals) {
+        super(name, yearOfBirth, job);
+        this.olympics = olympics;
+        this.medals = medals;
+    }
 
+    wonMedal () {
+        this.medals++;
+        console.log(this.medals);
+    }
+}
 
-
-
-
-
-
-
-
+var johnAthelete6 = new Athlete6('John', 1990, 'Swimmer', 3, 10);
+*/
